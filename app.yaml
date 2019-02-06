@@ -1,0 +1,26 @@
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+# [START bounce_service]
+# [START mail_service]
+inbound_services:
+- mail
+# [END mail_service]
+- mail_bounce
+# [END bounce_service]
+
+handlers:
+- url: /_ah/mail/web-leads@e2z-proxy.appspotmail.com
+  script: main.app
+
+- url: /_ah/mail/google-partner@e2z-proxy.appspotmail.com
+  script: main.app
+
+- url: /.*
+  script: main.app
+
+libraries:
+- name: ssl
+  version: latest
+
