@@ -4,17 +4,12 @@ import requests
 import logging
 import google.auth.transport.requests
 import requests_toolbelt.adapters.appengine
-from google.cloud import storage
-import cloudstorage as gcs
 from google.appengine.api import urlfetch
 
 urlfetch.set_default_fetch_deadline(60)
 
 requests_toolbelt.adapters.appengine.monkeypatch()
 HTTP_REQUEST = google.auth.transport.requests.Request()
-
-gcs_client = storage.Client(project='e2z-proxy')
-bucket = gcs_client.get_bucket("e2z-proxy-attachments")
 
 
 class ZenDesk(object):
@@ -56,12 +51,8 @@ class ZenDesk(object):
         return resp.json()['user']['id']
 
 
-    def upload(self, filename):
-        logging.info(filename)
+    def upload(self, filename,contents):
         api_path = "uploads.json?filename="+filename
-        logging.info(api_path)
-        gcs_file = gcs.open("/e2z-proxy-attachments/"+filename, 'r')
-        contents = gcs_file.read()
         headers = {"Content-Type": "application/octet-stream"}
         resp = requests.post(self.base_url + api_path, auth=(self.user, self.token), data=contents, headers=headers, timeout=60)
         if resp.status_code != 201:
@@ -69,6 +60,4 @@ class ZenDesk(object):
                           str(resp.status_code), resp.json()['error'])
             return None
         token = resp.json()['upload']['token']
-        logging.info(resp.content)
-        gcs.delete("/e2z-proxy-attachments/"+filename)
         return token

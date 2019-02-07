@@ -1,5 +1,5 @@
 import logging
-import uuid
+
 import json
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 import webapp2
@@ -30,6 +30,7 @@ class LogSenderHandler(InboundMailHandler):
             user = mail_message.sender
             tag = "no-reply@squarespace.info"
         if user == "":
+            logging.warning("Non Auth sender %s ", mail_message.sender)
             return
         if hasattr(mail_message, 'subject'):
             subject = mail_message.subject
@@ -40,18 +41,9 @@ class LogSenderHandler(InboundMailHandler):
         for content_type, body in plaintext_bodies:
             body_parts = body_parts + body.decode()
 
-        mail_id = uuid.uuid4()
         token = None
         for attachment in getattr(mail_message, 'attachments', []):
-            path = "{id}-{filename}".format(id=mail_id,
-                                            filename=attachment.filename)
-            blob = bucket.blob(path)
-            blob.upload_from_string(attachment.payload.decode())
-            blob.content_type = "application/binary"
-            if attachment.content_id:
-                blob.metadata = {"content_id": attachment.content_id[1:-1]}
-            blob.patch()
-            token = zd.upload(path)
+            token = zd.upload(attachment.filename,attachment.payload.decode())
             break
         requester_id = zd.get_user_id(user, "")
         logging.info(requester_id)
