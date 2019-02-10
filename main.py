@@ -5,15 +5,13 @@ from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 import webapp2
 import google.auth.transport.requests
 import requests_toolbelt.adapters.appengine
-from google.cloud import storage
 import zendesk
 
 
 requests_toolbelt.adapters.appengine.monkeypatch()
 HTTP_REQUEST = google.auth.transport.requests.Request()
 
-gcs_client = storage.Client(project='e2z-proxy')
-bucket = gcs_client.get_bucket("e2z-proxy-attachments")
+
 with open('config.json', 'r') as f:
     data = f.read()
 config = json.loads(data)
@@ -24,18 +22,24 @@ safe_senders=json.loads(data)
 
 zd = zendesk.ZenDesk(config['ZENDESK_TOKEN'])
 
+def get_sender_addr(addr):
+    ind = addr.find('<')
+    if ind ==-1:
+        return addr
+    return addr[ind+1:-1]
+
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
         user = ""
         if hasattr(mail_message, 'reply_to'):
             for r in safe_senders['reply_to']:
-                if mail_message.reply_to == r:
-                    user = mail_message.reply_to
+                if get_sender_addr(mail_message.reply_to) == r:
+                    user = get_sender_addr(mail_message.reply_to)
                     tag = r
                     break
         for s in safe_senders['senders']:
-            if mail_message.sender == s:
-                user = mail_message.sender
+            if get_sender_addr(mail_message.sender) == s:
+                user = get_sender_addr(mail_message.sender)
                 tag = s
                 break
         if user == "":
