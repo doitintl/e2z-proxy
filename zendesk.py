@@ -42,7 +42,7 @@ class ZenDesk(object):
         return resp.json()['users'][0]['id']
 
     def create_user(self, email, name):
-        new_user =  {"user": {"name": name, "email": email}}
+        new_user =  {"user": {"name": email, "email": email}}
         resp = self.api_call_post('users.json' , new_user)
         if resp.status_code != 201:
             logging.error("Couldn't create user %s %s %s", email, str(resp.status_code), resp.json()['error'])
