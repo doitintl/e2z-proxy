@@ -37,11 +37,24 @@ def validate_mail(addr):
             return True
     return False
 
+def get_user_from_body(body):
+    lines = body.splitlines()
+    found = 0
+    for l in lines:
+        if found == 2:
+            return l
+        if found == 1:
+            found = 2
+        if l == 'Contact Email':
+            found = 1
+    return ""
+
 
 
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
         user = ""
+        tag = ""
         if not validate_mail(mail_message.sender):
             logging.warning("Non Auth sender %s ", mail_message.sender)
             return
@@ -56,7 +69,6 @@ class LogSenderHandler(InboundMailHandler):
                 user = get_sender_addr(mail_message.sender)
                 tag = s
                 break
-        logging.info("User  %s", user)
         if hasattr(mail_message, 'subject'):
             subject = mail_message.subject
         else:
@@ -65,7 +77,10 @@ class LogSenderHandler(InboundMailHandler):
         body_parts = ""
         for content_type, body in plaintext_bodies:
             body_parts = body_parts + body.decode()
-
+        #HACK
+        if user == "":
+            user = get_user_from_body(body_parts)
+        logging.info("User  %s", user)
         token = None
         for attachment in getattr(mail_message, 'attachments', []):
             token = zd.upload(attachment.filename,attachment.payload.decode())
