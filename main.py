@@ -17,18 +17,27 @@ bucket = gcs_client.get_bucket("e2z-proxy-attachments")
 with open('config.json', 'r') as f:
     data = f.read()
 config = json.loads(data)
+
+with open('safe_senders.json', 'r') as f:
+   data = f.read()
+safe_senders=json.loads(data)
+
 zd = zendesk.ZenDesk(config['ZENDESK_TOKEN'])
 
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
         user = ""
-        if hasattr(mail_message,'reply_to'):
-            if mail_message.reply_to ==  "google-cloud-partner-directory@google.com":
-                user = mail_message.reply_to
-                tag = "google-cloud-partner-directory"
-        if mail_message.sender == "no-reply@squarespace.info":
-            user = mail_message.sender
-            tag = "no-reply@squarespace.info"
+        if hasattr(mail_message, 'reply_to'):
+            for r in safe_senders['reply_to']:
+                if mail_message.reply_to == r:
+                    user = mail_message.reply_to
+                    tag = r
+                    break
+        for s in safe_senders['senders']:
+            if mail_message.sender == s:
+                user = mail_message.sender
+                tag = s
+                break
         if user == "":
             logging.warning("Non Auth sender %s ", mail_message.sender)
             return
