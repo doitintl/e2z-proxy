@@ -1,5 +1,5 @@
 {
 
-  "senders": ["no-reply@squarespace.info"],
-  "reply_to": ["google-cloud-partner-directory@google.com"]
+  "senders": [],
+  "reply_to": ["google-cloud-partner-directory@google.com","no-reply@squarespace.info"]
 }

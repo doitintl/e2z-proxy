@@ -28,12 +28,26 @@ def get_sender_addr(addr):
         return addr
     return addr[ind+1:-1]
 
+def validate_mail(addr):
+    for s in safe_senders['senders']:
+        if get_sender_addr(addr) == s:
+            return True
+    for s in safe_senders['reply_to']:
+        if get_sender_addr(addr) == s:
+            return True
+    return False
+
+
+
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
         user = ""
+        if not validate_mail(mail_message.sender):
+            logging.warning("Non Auth sender %s ", mail_message.sender)
+            return
         if hasattr(mail_message, 'reply_to'):
             for r in safe_senders['reply_to']:
-                if get_sender_addr(mail_message.reply_to) == r:
+                if get_sender_addr(mail_message.sender) == r:
                     user = get_sender_addr(mail_message.reply_to)
                     tag = r
                     break
@@ -42,9 +56,7 @@ class LogSenderHandler(InboundMailHandler):
                 user = get_sender_addr(mail_message.sender)
                 tag = s
                 break
-        if user == "":
-            logging.warning("Non Auth sender %s ", mail_message.sender)
-            return
+        logging.info("User  %s", user)
         if hasattr(mail_message, 'subject'):
             subject = mail_message.subject
         else:
