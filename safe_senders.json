@@ -1,5 +1,5 @@
 {
 
-  "senders": [],
+  "senders": ["website@doit-intl.com"],
   "reply_to": ["google-cloud-partner-directory@google.com","no-reply@squarespace.info"]
 }

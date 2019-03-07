@@ -65,10 +65,15 @@ class LogSenderHandler(InboundMailHandler):
                     tag = r
                     break
         for s in safe_senders['senders']:
-            if get_sender_addr(mail_message.sender) == s:
-                user = get_sender_addr(mail_message.sender)
+            if hasattr(mail_message, 'reply_to'):
+                user = get_sender_addr(mail_message.reply_to)
                 tag = s
                 break
+            else:
+                if get_sender_addr(mail_message.sender) == s:
+                    user = get_sender_addr(mail_message.sender)
+                    tag = s
+                    break
         if hasattr(mail_message, 'subject'):
             subject = mail_message.subject
         else:
