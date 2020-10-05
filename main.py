@@ -105,7 +105,7 @@ def submit_ticket(requester_id, subject, description,token, tag):
             'description': description,
             "comment": { "body": description, "uploads":  [token] },
             "priority": 0,
-            "additional_collaborators": ['ranr@doit-intl.com', 'vadim@doit-intl.com','ytc@doit-intl.com','spenser@doit-intl.com'],
+            "additional_collaborators": ['james@doit-intl.com', 'kahina@doit-intl.com', 'lewin@doit-intl.com','vadim@doit-intl.com','ytc@doit-intl.com','spenser@doit-intl.com'],
             "tags": [tag],
             "group_id": 25032363
         }
